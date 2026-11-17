@@ -67,3 +67,30 @@ func TestReadOneEmptyArchiveName(t *testing.T) {
 		})
 	}
 }
+
+func TestStrictMime(t *testing.T) {
+	tests := []struct {
+		mime, archname, ext string
+	}{
+		{"", "shard.tar", archive.ExtTar},
+		{archive.ExtTar, "shard.tar", archive.ExtTar},
+		{"tar", "shard.tar", archive.ExtTar},
+		{"application/x-tar", "shard.tar", archive.ExtTar},
+		{"application/zip", "shard.zip", archive.ExtZip},
+		{"application/x-tar.lz4", "shard.tar.lz4", archive.ExtTarLz4},
+	}
+	for _, test := range tests {
+		m, err := archive.Strict(test.mime, test.archname)
+		if err != nil {
+			t.Errorf("Strict(%q, %q): unexpected error: %v", test.mime, test.archname, err)
+			continue
+		}
+		if m != test.ext {
+			t.Errorf("Strict(%q, %q) = %q, expected %q", test.mime, test.archname, m, test.ext)
+		}
+	}
+	// user-defined MIME must correspond to the extension
+	if m, err := archive.Strict("application/zip", "shard.tar"); err == nil {
+		t.Errorf("Strict(%q, %q) = %q, expected mismatch error", "application/zip", "shard.tar", m)
+	}
+}

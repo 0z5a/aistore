@@ -64,8 +64,9 @@ var (
 
 // motivation: prevent from creating archives with non-standard extensions
 func Strict(mime, filename string) (m string, err error) {
+	var nm string
 	if mime != "" {
-		if m, err = normalize(mime); err != nil {
+		if nm, err = normalize(mime); err != nil {
 			return
 		}
 	}
@@ -73,7 +74,7 @@ func Strict(mime, filename string) (m string, err error) {
 	if err != nil || mime == "" {
 		return
 	}
-	if mime != m {
+	if nm != m {
 		// user-defined (non-empty) MIME must correspond
 		err = fmt.Errorf("mime mismatch %q vs %q", mime, m)
 	}
